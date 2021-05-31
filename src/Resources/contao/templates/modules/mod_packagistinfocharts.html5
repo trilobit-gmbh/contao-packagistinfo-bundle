@@ -1,0 +1,19 @@
+<?php $this->extend('block_searchable'); ?>
+
+<?php $this->block('content'); ?>
+
+<h2>Auswertungszeitraum</h2>
+<h3><?php echo $this->timeline['date']['from']; ?> bis <?php echo $this->timeline['date']['to']; ?></h3>
+
+<script src="/bundles/trilobitpackagistinfo/chart.js"></script>
+
+<canvas id="packagistInfoChart_<?php echo $this->id; ?>"></canvas>
+
+<script>
+    new Chart(
+        document.getElementById('packagistInfoChart_<?php echo $this->id; ?>'),
+        <?php echo $this->config['json']; ?>
+    );
+</script>
+
+<?php $this->endblock(); ?>

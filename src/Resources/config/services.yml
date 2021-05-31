@@ -1,0 +1,18 @@
+services:
+  _instanceof:
+    Symfony\Component\DependencyInjection\ContainerAwareInterface:
+      calls:
+        - ['setFramework', ['@contao.framework']]
+
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    bind:
+      $rootDir: '%kernel.project_dir%'
+
+  trilobit.packagistinfo.cron:
+    class: Trilobit\PackagistinfoBundle\Cron\PackagistinfoCron
+    tags:
+      -
+        name: contao.cronjob
+        interval: '* * * * *'
