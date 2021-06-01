@@ -15,5 +15,8 @@
         <?php echo $this->config['json']; ?>
     );
 </script>
+<p>
+    <a href="<?php echo $this->url; ?>"><?php echo $this->url; ?></a>
+</p>
 
 <?php $this->endblock(); ?>

@@ -1,6 +1,6 @@
 <?php $this->extend('block_searchable'); ?>
 
-<?php $this->block('content'); ?>
+<?php $this->block('content'); $color = '42,166,218,.75'; ?>
 
 <h2>Auswertungszeitraum</h2>
 <h3><?php echo $this->timeline['date']['from']; ?> bis <?php echo $this->timeline['date']['to']; ?></h3>
@@ -34,7 +34,20 @@
         <?php foreach ($this->tbody as $row => $cols): ?>
             <tr class="row_<?php echo $row; ?>">
                 <?php foreach ($cols as $key => $value): ?>
-                    <<?php echo 0 === $key ? 'th' : 'td'; ?> class="col_<?php echo $key; ?> text-right">
+                    <<?php echo 0 === $key ? 'th' : 'td'; ?> class="col_<?php echo $key; ?> text-right"
+                    <?php if (1===2 && 0 !== $key):
+                        $percentDownloads = (int) ($value['count']['downloads'] / $this->max['downloads'] * 100);
+                        if (0 < $percentDownloads):
+                    ?>
+                        style="background: linear-gradient(0deg,
+                        rgba(255,255,255,0) 0%,
+                        rgba(255,255,255,0) calc(<?php echo $percentDownloads; ?>% - 2px),
+                        rgba(<?php echo $color; ?>) calc(<?php echo $percentDownloads; ?>% - 1px),
+                        rgba(255,255,255,0) calc(<?php echo $percentDownloads; ?>%),
+                        rgba(255,255,255,0) 100%
+                        );"
+                    <?php endif; endif; ?>
+                    >
                         <?php if (0 === $key): ?>
                             <?php echo $this->packages[$value]['title']; ?><br>
                             <a class="font-weight-light" href="<?php echo $this->packages[$value]['url']; ?>">Packagist</a>
@@ -72,6 +85,18 @@
         <?php endforeach; ?>
         </tbody>
     </table>
+
+    <p>
+        <a href="<?php echo $this->url; ?>"><?php echo $this->url; ?></a>
+    </p>
+    <p>
+        min Downloads: <?php echo $this->min['downloads']; ?><br>
+        max Downloads: <?php echo $this->max['downloads']; ?>
+    </p>
+    <p>
+        min Favers: <?php echo $this->min['favers']; ?><br>
+        max Favers: <?php echo $this->max['favers']; ?>
+    </p>
 </div>
 
 <?php $this->endblock(); ?>
