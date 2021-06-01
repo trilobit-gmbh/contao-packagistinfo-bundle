@@ -368,6 +368,7 @@ class PackagistinfoCharts extends Module
         $timeline = $packagist->getTimeline($this->packages);
         $packages = $packagist->getPackages($this->packages);
 
+        $this->Template->url = $packagist->getPackagistUrl();
         $this->Template->packages = $packages;
 
         $config = [

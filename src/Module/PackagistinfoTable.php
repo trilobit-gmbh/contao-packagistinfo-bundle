@@ -52,6 +52,7 @@ class PackagistinfoTable extends Module
         $timeline = $packagist->getTimeline($this->packages);
         $packages = $packagist->getPackages($this->packages);
 
+        $this->Template->url = $packagist->getPackagistUrl();
         $this->Template->packages = $packages;
 
         $thead = [''];
@@ -69,15 +70,35 @@ class PackagistinfoTable extends Module
             $tbody[$key][] = $value['id'];
 
             foreach ($timeline as $tstamp) {
-                $tbody[$key][$tstamp] = '';
+                $tbody[$key][$tstamp] = [
+                    'count' => [
+                        'downloads' => null,
+                        'favers' => null,
+                    ],
+                    'status' => [
+                        'downloads' => '',
+                        'favers' => '',
+                    ],
+                ];
             }
+
+            $max[$key] = [
+                'downloads' => null,
+                'favers' => null,
+            ];
+
+            $min[$key] = [
+                'downloads' => null,
+                'favers' => null,
+            ];
+
+            $last = [
+                'downloads' => null,
+                'favers' => null,
+            ];
 
             $data = $packagist->getPackageItems($value['id']);
 
-            $last = [
-                'downloads' => '',
-                'favers' => '',
-            ];
             foreach ($data as $count) {
                 $tbody[$key][$count['check']] = [
                     'count' => [
@@ -85,15 +106,42 @@ class PackagistinfoTable extends Module
                         'favers' => $count['favers'],
                     ],
                     'status' => [
-                        'downloads' => ('' === $last['downloads'] ? '' : ($last['downloads'] === $count['downloads'] ? 0 : ($last['downloads'] < $count['downloads'] ? 1 : -1))),
-                        'favers' => ('' === $last['downloads'] ? '' : ($last['favers'] === $count['favers'] ? 0 : ($last['favers'] < $count['favers'] ? 1 : -1))),
+                        'downloads' => (empty($last['downloads']) ? '' : ($last['downloads'] === $count['downloads'] ? 0 : ($last['downloads'] < $count['downloads'] ? 1 : -1))),
+                        'favers' => (empty($last['favers']) ? '' : ($last['favers'] === $count['favers'] ? 0 : ($last['favers'] < $count['favers'] ? 1 : -1))),
                     ],
+                    'id' => $key,
+                ];
+
+                $min[$key] = [
+                    'downloads' => ($count['downloads'] < $min[$key]['downloads'] || empty($min[$key]['downloads'])) ? $count['downloads'] : $min[$key]['downloads'],
+                    'favers' => ($count['favers'] < $min[$key]['favers'] || empty($min[$key]['favers'])) ? $count['favers'] : $min[$key]['favers'],
+                ];
+
+                $max[$key] = [
+                    'downloads' => ($count['downloads'] > $max[$key]['downloads'] || empty($max[$key]['downloads'])) ? $count['downloads'] : $max[$key]['downloads'],
+                    'favers' => ($count['favers'] > $max[$key]['favers'] || empty($max[$key]['favers'])) ? $count['favers'] : $max[$key]['favers'],
                 ];
 
                 $last = [
                     'downloads' => $count['downloads'],
                     'favers' => $count['favers'],
                 ];
+
+                if ($count['downloads'] < $min['downloads'] || null === $min['downloads']) {
+                    $min['downloads'] = $count['downloads'];
+                }
+
+                if ($count['favers'] < $min['favers'] || null === $min['favers']) {
+                    $min['favers'] = $count['favers'];
+                }
+
+                if ($count['downloads'] > $max['downloads']) {
+                    $max['downloads'] = $count['downloads'];
+                }
+
+                if ($count['favers'] > $max['favers']) {
+                    $max['favers'] = $count['favers'];
+                }
             }
 
             ++$n;
@@ -106,6 +154,8 @@ class PackagistinfoTable extends Module
         $this->Template->tfoot = $tfoot;
         $this->Template->tbody = $tbody;
         $this->Template->caption = $this->packagistsummary;
+        $this->Template->min = $min;
+        $this->Template->max = $max;
 
         $this->Template->timeline = [
             'datim' => [
