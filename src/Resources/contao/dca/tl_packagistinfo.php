@@ -138,13 +138,13 @@ $GLOBALS['TL_DCA']['tl_packagistinfo'] = [
             'exclude' => true,
             'inputType' => 'text',
             'eval' => ['rgxp' => 'natural', 'tl_class' => 'w50'],
-            'sql' => 'smallint(5) unsigned NOT NULL default 0',
+            'sql' => 'int(15) unsigned NOT NULL default 0',
         ],
         'favers' => [
             'exclude' => true,
             'inputType' => 'text',
             'eval' => ['rgxp' => 'natural', 'tl_class' => 'w50'],
-            'sql' => 'smallint(5) unsigned NOT NULL default 0',
+            'sql' => 'int(15) unsigned NOT NULL default 0',
         ],
 
         'check' => [
