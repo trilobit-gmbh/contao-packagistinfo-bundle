@@ -3,7 +3,6 @@
     "description": "Contao 4 packagistinfo bundle",
     "type": "contao-bundle",
     "license": "LGPL-3.0-or-later",
-    "version": "1.0",
     "authors": [
         {
             "name": "trilobit GmbH",
@@ -11,10 +10,8 @@
         }
     ],
     "require": {
-        "contao/core-bundle": "~4.9",
-        "php": "^7.3",
-        "trilobit-gmbh/contao-serverhint-bundle": "^1.0",
-        "ext-curl": "*"
+        "php": "^7.0",
+        "contao/core-bundle": "~4.4"
     },
     "require-dev": {
         "contao/manager-plugin": "^2.0",
