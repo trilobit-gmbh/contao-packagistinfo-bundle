@@ -53,6 +53,7 @@ class PackagistinfoController extends AbstractController
     {
         $this->rootDir = System::getContainer()->getParameter('kernel.project_dir');
         $this->packagistUrl = 'https://packagist.org/search.json?q=trilobit-gmbh';
+        #$this->packagistUrl = 'https://packagist.org/search.json?type=contao-bundle';
         $this->database = Database::getInstance();
 
         $this->datimFormat = Config::get('datimFormat');
@@ -187,7 +188,7 @@ class PackagistinfoController extends AbstractController
 
     public function getPackageName($value): string
     {
-        return ucwords($value, ' -');
+        return ucwords(str_replace('/', ' / ', $value), ' -');
     }
 
     protected function updatePackagistData(array $data): void
@@ -216,8 +217,6 @@ class PackagistinfoController extends AbstractController
             if (Date::parse($this->getInterval(), $time) <= Date::parse($this->getInterval(), $tstamp)) {
                 continue;
             }
-
-            var_dump(strtotime('-1 days', $time), $tstamp, (strtotime('-1 days', $time) <= $tstamp));
 
             // add new row
             $this->database
