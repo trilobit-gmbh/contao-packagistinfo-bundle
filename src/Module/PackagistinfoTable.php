@@ -21,6 +21,11 @@ class PackagistinfoTable extends Module
 {
     protected $strTemplate = 'mod_packagistinfotable';
 
+    /**
+     * @var mixed|PackagistinfoController
+     */
+    private $packagist;
+
     public function generate()
     {
         $request = System::getContainer()->get('request_stack')->getCurrentRequest();
@@ -41,18 +46,17 @@ class PackagistinfoTable extends Module
         }
 
         $this->packages = array_map((function ($item) { return (int) $item; }), $this->packages);
+        $this->packagist = new PackagistinfoController();
 
         return parent::generate();
     }
 
     protected function compile()
     {
-        $packagist = new PackagistinfoController();
+        $timeline = $this->packagist->getTimeline($this->packages);
+        $packages = $this->packagist->getPackages($this->packages);
 
-        $timeline = $packagist->getTimeline($this->packages);
-        $packages = $packagist->getPackages($this->packages);
-
-        $this->Template->url = $packagist->getPackagistUrl();
+        $this->Template->url = $this->packagist->getPackagistUrl();
         $this->Template->packages = $packages;
 
         $thead = [''];
@@ -60,7 +64,7 @@ class PackagistinfoTable extends Module
         $tbody = [];
 
         foreach ($timeline as $tstamp) {
-            $marker = Date::parse($packagist->getLabelFormat(), $tstamp);
+            $marker = Date::parse($this->packagist->getLabelFormat(), $tstamp);
             $thead[] = $marker;
         }
         $tfoot = $thead;
@@ -97,7 +101,7 @@ class PackagistinfoTable extends Module
                 'favers' => null,
             ];
 
-            $data = $packagist->getPackageItems($value['id']);
+            $data = $this->packagist->getPackageItems($value['id']);
 
             foreach ($data as $count) {
                 $tbody[$key][$count['check']] = [
@@ -147,8 +151,8 @@ class PackagistinfoTable extends Module
             ++$n;
         }
 
-        $tstampStart = $packagist->getFirstDate($timeline);
-        $tstampEnd = $packagist->getLastDate($timeline);
+        $tstampStart = $this->packagist->getFirstDate($timeline);
+        $tstampEnd = $this->packagist->getLastDate($timeline);
 
         $this->Template->thead = $thead;
         $this->Template->tfoot = $tfoot;
@@ -159,16 +163,16 @@ class PackagistinfoTable extends Module
 
         $this->Template->timeline = [
             'datim' => [
-                'from' => Date::parse($packagist->getDatimFormat(), $tstampStart),
-                'to' => Date::parse($packagist->getDatimFormat(), $tstampEnd),
+                'from' => Date::parse($this->packagist->getDatimFormat(), $tstampStart),
+                'to' => Date::parse($this->packagist->getDatimFormat(), $tstampEnd),
             ],
             'date' => [
-                'from' => Date::parse($packagist->getDateFormat(), $tstampStart),
-                'to' => Date::parse($packagist->getDateFormat(), $tstampEnd),
+                'from' => Date::parse($this->packagist->getDateFormat(), $tstampStart),
+                'to' => Date::parse($this->packagist->getDateFormat(), $tstampEnd),
             ],
             'time' => [
-                'from' => Date::parse($packagist->getTimeFormat(), $tstampStart),
-                'to' => Date::parse($packagist->getTimeFormat(), $tstampEnd),
+                'from' => Date::parse($this->packagist->getTimeFormat(), $tstampStart),
+                'to' => Date::parse($this->packagist->getTimeFormat(), $tstampEnd),
             ],
             'raw' => [
                 'from' => $tstampStart,

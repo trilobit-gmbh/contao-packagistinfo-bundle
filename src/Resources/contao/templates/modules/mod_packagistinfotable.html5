@@ -13,9 +13,12 @@
         <thead>
         <tr>
             <?php foreach ($this->thead as $key => $value): ?>
-                <th class="head_<?php echo $key; ?>">
+                <th class="head_<?php echo $key; ?> text-center">
                     <?php echo $value; ?>
                 </th>
+                <?php if (0 === $key): ?>
+                    <th></th>
+                <?php endif; ?>
             <?php endforeach; ?>
         </tr>
         </thead>
@@ -23,9 +26,12 @@
         <tfoot>
         <tr>
             <?php foreach ($this->tfoot as $key => $value): ?>
-                <th class="foot_<?php echo $key; ?>">
+                <th class="foot_<?php echo $key; ?> text-center">
                     <?php echo $value; ?>
                 </th>
+                <?php if (0 === $key): ?>
+                    <th></th>
+                <?php endif; ?>
             <?php endforeach; ?>
         </tr>
         </tfoot>
@@ -34,7 +40,7 @@
         <?php foreach ($this->tbody as $row => $cols): ?>
             <tr class="row_<?php echo $row; ?>">
                 <?php foreach ($cols as $key => $value): ?>
-                    <<?php echo 0 === $key ? 'th' : 'td'; ?> class="col_<?php echo $key; ?> text-right"
+                    <<?php echo 0 === $key ? 'th' : 'td'; ?> class="col_<?php echo $key; ?> text-right text-nowrap"
                     <?php if (1===2 && 0 !== $key):
                         $percentDownloads = (int) ($value['count']['downloads'] / $this->max['downloads'] * 100);
                         if (0 < $percentDownloads):
@@ -49,30 +55,29 @@
                     <?php endif; endif; ?>
                     >
                         <?php if (0 === $key): ?>
-                            <?php echo $this->packages[$value]['title']; ?><br>
-                            <a class="font-weight-light" href="<?php echo $this->packages[$value]['url']; ?>">Packagist</a>
+                            <a class="text-dark" href="<?php echo $this->packages[$value]['url']; ?>"><?php echo preg_replace('/Trilobit-Gmbh \/ Contao-(.*?)-Bundle/i', '$1', $this->packages[$value]['title']); ?></a>
                         <?php else: ?>
                             <?php if (is_array($value)): ?>
-                                <span class="downloads d-block">
-                                    <i class="fas fa-download text-light"></i>
-                                    <?php echo $value['count']['downloads']; ?>
+                                <span class="downloads d-block<?php echo ($this->max['downloads'] === $value['count']['downloads'] ? ' font-weight-bold' : ''); ?>">
+                                    <span class="mx-1"><?php echo $value['count']['downloads']; ?></span>
+
                                     <?php if (0 === $value['status']['downloads']): ?>
-                                        <i class="far fa-arrow-alt-circle-right"></i>
+                                        <i class="far fa-arrow-alt-circle-right text-light"></i>
                                     <?php elseif (1 === $value['status']['downloads']): ?>
-                                        <i class="far fa-arrow-alt-circle-up"></i>
+                                        <i class="far fa-arrow-alt-circle-up text-success"></i>
                                     <?php elseif (-1 === $value['status']['downloads']): ?>
-                                        <i class="far fa-arrow-alt-circle-down"></i>
+                                        <i class="far fa-arrow-alt-circle-down text-warning"></i>
                                     <?php endif; ?>
-                                    </span>
+                                </span>
                                 <span class="favers d-block">
-                                    <i class="far fa-heart text-light"></i>
-                                    <?php echo $value['count']['favers']; ?>
+                                    <span class="mx-2"><?php echo $value['count']['favers']; ?></span>
+
                                     <?php if (0 === $value['status']['favers']): ?>
-                                        <i class="far fa-arrow-alt-circle-right"></i>
+                                        <i class="far fa-arrow-alt-circle-right text-light"></i>
                                     <?php elseif (1 === $value['status']['favers']): ?>
-                                        <i class="far fa-arrow-alt-circle-up"></i>
+                                        <i class="far fa-arrow-alt-circle-up text-success"></i>
                                     <?php elseif (-1 === $value['status']['favers']): ?>
-                                        <i class="far fa-arrow-alt-circle-down"></i>
+                                        <i class="far fa-arrow-alt-circle-down text-warning"></i>
                                     <?php endif; ?>
                                     </span>
                             <?php else: ?>
@@ -80,6 +85,17 @@
                             <?php endif; ?>
                         <?php endif; ?>
                     </<?php echo 0 === $key ? 'th' : 'td'; ?>>
+
+                    <?php if (0 === $key): ?>
+                        <th class="border-left border-right">
+                            <span class="downloads d-block">
+                                <i class="fas fa-download"></i>
+                            </span>
+                            <span class="favers d-block">
+                                <i class="far fa-heart"></i>
+                            </span>
+                        </th>
+                    <?php endif; ?>
                 <?php endforeach; ?>
             </tr>
         <?php endforeach; ?>
