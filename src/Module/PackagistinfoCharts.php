@@ -56,6 +56,8 @@ class PackagistinfoCharts extends Module
                     ],
                     'ticks' => [
                         'beginAtZero' => true,
+                        'padding' => 5,
+                        'fontColor' => '#000',
                     ],
                 ],
             ],
@@ -350,6 +352,11 @@ class PackagistinfoCharts extends Module
      */
     private $packages;
 
+    /**
+     * @var float|mixed
+     */
+    private $brightness;
+
     public function generate()
     {
         $request = System::getContainer()->get('request_stack')->getCurrentRequest();
@@ -371,7 +378,9 @@ class PackagistinfoCharts extends Module
 
         $this->packages = array_map((function ($item) { return (int) $item; }), $this->packages);
         $this->packagist = new PackagistinfoController();
-        $this->config =
+
+        $this->brightness = .25;
+        $this->opacity = .25;
 
         $this->current = $this->packagistcurrent;
 
@@ -431,7 +440,6 @@ class PackagistinfoCharts extends Module
     protected function getCurrentData($packages, &$config): void
     {
         $colorId = rand(0, \count($this->chartSettings['colors']) - 1);
-        $brightness = .25;
 
         $config['type'] = 'bar';
         $config['options']['indexAxis'] = 'y';
@@ -452,14 +460,14 @@ class PackagistinfoCharts extends Module
             foreach ($packages as $value) {
                 $color = $this->chartSettings['colors'][$colorId];
 
-                $config['data']['datasets'][$n]['backgroundColor'][$i] = (0 === $n ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][0]['backgroundColor'][$i], $brightness));
-                $config['data']['datasets'][$n]['pointBorderColor'][$i] = (0 === $n ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][0]['pointBorderColor'][$i], $brightness));
-                $config['data']['datasets'][$n]['borderColor'][$i] = (0 === $n ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][0]['borderColor'][$i], $brightness));
+                $config['data']['datasets'][$n]['backgroundColor'][$i] = (0 === $n ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][0]['backgroundColor'][$i], $this->brightness));
+                $config['data']['datasets'][$n]['pointBorderColor'][$i] = (0 === $n ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][0]['pointBorderColor'][$i], $this->brightness));
+                $config['data']['datasets'][$n]['borderColor'][$i] = (0 === $n ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][0]['borderColor'][$i], $this->brightness));
 
                 $data = $this->packagist->getPackageItems($value['id'], $this->current);
 
                 $config['data']['datasets'][$n]['data'][] = $data[0][$type];
-                $config['data']['labels'][$value['id']] = $value['title'];
+                $config['data']['labels'][$value['id']] = $this->packagist->getPackageName(preg_replace('/Trilobit-Gmbh \/ Contao-(.*?)-Bundle/i', '$1', $value['title']));
 
                 $colorId += 5;
                 if ($colorId >= \count($this->chartSettings['colors'])) {
@@ -492,7 +500,6 @@ class PackagistinfoCharts extends Module
         $n = 0;
         $i = 0;
         foreach (['downloads', 'favers'] as $type) {
-
             $j = 0;
 
             foreach ($packages as $value) {
@@ -500,12 +507,12 @@ class PackagistinfoCharts extends Module
 
                 $config['data']['datasets'][$n] = $this->chartSettings['default'];
 
-                $config['data']['datasets'][$n]['backgroundColor'] = (0 === $i ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][$j]['backgroundColor'], $brightness));
-                $config['data']['datasets'][$n]['pointBorderColor'] = (0 === $i ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][$j]['pointBorderColor'], $brightness));
-                $config['data']['datasets'][$n]['borderColor'] = (0 === $i ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][$j]['borderColor'], $brightness));
+                $config['data']['datasets'][$n]['backgroundColor'] = (0 === $i ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][$j]['backgroundColor'], $this->brightness));
+                $config['data']['datasets'][$n]['pointBorderColor'] = (0 === $i ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][$j]['pointBorderColor'], $this->brightness));
+                $config['data']['datasets'][$n]['borderColor'] = (0 === $i ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][$j]['borderColor'], $this->brightness));
 
                 $config['data']['datasets'][$n]['data'] = [];
-                $config['data']['datasets'][$n]['label'] = $this->packagist->getPackageName($value['name']);
+                $config['data']['datasets'][$n]['label'] = $this->packagist->getPackageName(preg_replace('/Trilobit-Gmbh \/ Contao-(.*?)-Bundle/i', '$1', $value['title']));
                 $config['data']['datasets'][$n]['countType'] = $type;
 
                 foreach ($timeline as $tstamp) {

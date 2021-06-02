@@ -24,7 +24,7 @@
             </ul></div>
         <div class="col-sm"><h3><?php echo $type; ?></h3><ul>
                 <?php endif; ?>
-                <li><span style="background-color: <?php echo $value['backgroundColor']; ?>; borderColor: <?php echo $value['borderColor']; ?>" class="px-3 mr-2"></span><?php echo $value['label']; ?></li>
+                <li><span style="background-color: <?php echo $value['backgroundColor']; ?>; borderColor: <?php echo $value['borderColor']; ?>" class="px-3 mr-2"></span><?php echo preg_replace('/Trilobit-Gmbh \/ Contao-(.*?)-Bundle/i', '$1', $value['label']); ?></li>
                 <?php endforeach; ?>
             </ul>
         </div>
