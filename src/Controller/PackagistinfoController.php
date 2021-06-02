@@ -53,7 +53,7 @@ class PackagistinfoController extends AbstractController
     {
         $this->rootDir = System::getContainer()->getParameter('kernel.project_dir');
         $this->packagistUrl = 'https://packagist.org/search.json?q=trilobit-gmbh';
-        #$this->packagistUrl = 'https://packagist.org/search.json?type=contao-bundle';
+        //$this->packagistUrl = 'https://packagist.org/search.json?type=contao-bundle';
         $this->database = Database::getInstance();
 
         $this->datimFormat = Config::get('datimFormat');
@@ -151,9 +151,17 @@ class PackagistinfoController extends AbstractController
         exit();
     }
 
-    public function getTimeline(array $items = []): array
+    public function getTimeline(array $items = [], bool $current = false): array
     {
-        //$items = [];
+        if ($current) {
+            return $this->database
+                ->prepare('SELECT DISTINCT `check` FROM tl_packagistinfo WHERE pid!=? AND published=?'.(!empty($items) ? ' AND pid IN (\''.implode('\',\'', $items).'\')' : '').' ORDER BY `check` DESC')
+                ->limit(1)
+                ->execute('0', '1')
+                ->fetchEach('check')
+                ;
+        }
+
         return $this->database
             ->prepare('SELECT DISTINCT `check` FROM tl_packagistinfo WHERE pid!=? AND published=?'.(!empty($items) ? ' AND pid IN (\''.implode('\',\'', $items).'\')' : '').' ORDER BY `check` ASC')
             ->execute('0', '1')
@@ -168,6 +176,7 @@ class PackagistinfoController extends AbstractController
             ->execute('0', '1')
             ->fetchAllAssoc()
         ;
+
         $data = [];
         foreach ($result as $value) {
             $data[$value['id']] = $value;
@@ -177,8 +186,17 @@ class PackagistinfoController extends AbstractController
         return $data;
     }
 
-    public function getPackageItems($id): array
+    public function getPackageItems($id, bool $current = false): array
     {
+        if ($current) {
+            return Database::getInstance()
+                ->prepare('SELECT downloads,favers,`check` FROM tl_packagistinfo WHERE pid=? ORDER BY `check` DESC')
+                ->limit(1)
+                ->execute($id)
+                ->fetchAllAssoc()
+                ;
+        }
+
         return Database::getInstance()
             ->prepare('SELECT downloads,favers,`check` FROM tl_packagistinfo WHERE pid=? ORDER BY `check` ASC')
             ->execute($id)
@@ -189,6 +207,26 @@ class PackagistinfoController extends AbstractController
     public function getPackageName($value): string
     {
         return ucwords(str_replace('/', ' / ', $value), ' -');
+    }
+
+    public function adjustBrightness($hexCode, $adjustPercent)
+    {
+        $hexCode = ltrim($hexCode, '#');
+
+        if (3 === \strlen($hexCode)) {
+            $hexCode = $hexCode[0].$hexCode[0].$hexCode[1].$hexCode[1].$hexCode[2].$hexCode[2];
+        }
+
+        $hexCode = array_map('hexdec', str_split($hexCode, 2));
+
+        foreach ($hexCode as &$color) {
+            $adjustableLimit = $adjustPercent < 0 ? $color : 255 - $color;
+            $adjustAmount = ceil($adjustableLimit * $adjustPercent);
+
+            $color = str_pad(dechex($color + $adjustAmount), 2, '0', \STR_PAD_LEFT);
+        }
+
+        return '#'.implode('', $hexCode);
     }
 
     protected function updatePackagistData(array $data): void
@@ -205,8 +243,6 @@ class PackagistinfoController extends AbstractController
             $pid = 0;
             $tstamp = 0;
             $published = 1;
-
-            $value['name'] = str_replace('trilobit-gmbh/', '', $value['name']);
 
             if (false !== array_search($value['name'], array_column($rootElements, 'name'), true)) {
                 $pid = (int) $rootElements[array_search($value['name'], array_column($rootElements, 'name'), true)]['id'];

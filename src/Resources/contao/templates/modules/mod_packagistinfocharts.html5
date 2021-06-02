@@ -3,11 +3,33 @@
 <?php $this->block('content'); ?>
 
 <h2>Auswertungszeitraum</h2>
-<h3><?php echo $this->timeline['date']['from']; ?> bis <?php echo $this->timeline['date']['to']; ?></h3>
+<h3><?php echo $this->timeline['date']['from']; ?>
+<?php if (!$this->current): ?>
+     bis <?php echo $this->timeline['date']['to']; ?>
+<?php endif; ?>
+</h3>
 
 <script src="/bundles/trilobitpackagistinfo/chart.js"></script>
 
 <canvas id="packagistInfoChart_<?php echo $this->id; ?>"></canvas>
+
+<?php if (!$this->current): ?>
+    <div class="legend row">
+        <?php $type = $this->config['php']['data']['datasets'][0]['countType']; ?>
+        <div class="col-sm">
+            <h3><?php echo $this->config['php']['data']['datasets'][0]['countType']; ?></h3>
+            <ul>
+                <?php foreach ($this->config['php']['data']['datasets'] as $key => $value): ?>
+                <?php if ($type !== $value['countType']): $type = $value['countType']; ?>
+            </ul></div>
+        <div class="col-sm"><h3><?php echo $type; ?></h3><ul>
+                <?php endif; ?>
+                <li><span style="background-color: <?php echo $value['backgroundColor']; ?>; borderColor: <?php echo $value['borderColor']; ?>" class="px-3 mr-2"></span><?php echo $value['label']; ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    </div>
+<?php endif; ?>
 
 <script>
     new Chart(

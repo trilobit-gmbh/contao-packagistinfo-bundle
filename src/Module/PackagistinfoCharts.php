@@ -19,47 +19,54 @@ use Trilobit\PackagistinfoBundle\Controller\PackagistinfoController;
 
 class PackagistinfoCharts extends Module
 {
-    const chartSettings = [
-        'type' => 'line', //line, radar, doughnut,
+    /**
+     * @var mixed
+     */
+    public $current;
 
+    protected $strTemplate = 'mod_packagistinfocharts';
+
+    private $chartSettings = [
         'default' => [
             'fill' => 'false',
             'spanGaps' => 'false',
             'steppedLine' => 'false',
-            //'backgroundColor' => '',
-            //'pointBorderColor' => '',
-            //'borderColor' => '',
             'borderWidth' => 1,
             'pointRadius' => '1',
             'pointHoverRadius' => '5',
             'showLine' => 'true',
+            'minBarLength' => 25,
         ],
 
         'options' => [
             'scales' => [
-                'xAxes' => [
-                    [
-                        'ticks' => [
-                            'min' => 0,
-                        ],
-                        'position' => 'bottom',
+                'x' => [
+                    'display' => true,
+                    'title' => [
+                        'display' => false,
+                    ],
+                    'ticks' => [
+                        'beginAtZero' => true,
                     ],
                 ],
-                'yAxes' => [
-                    [
-                        'ticks' => [
-                            'beginAtZero' => 'false',
-                            'min' => 0,
-                        ],
+                'y' => [
+                    'display' => true,
+                    'title' => [
+                        'display' => false,
+                    ],
+                    'ticks' => [
+                        'beginAtZero' => true,
                     ],
                 ],
             ],
             'plugins' => [
                 'legend' => [
-                    'display' => true,
+                    'display' => false,
                     'position' => 'bottom',
+                    'title' => [
+                        'display' => false,
+                    ],
                 ],
-                'title' => ['display' => false],
             ],
         ],
 
@@ -333,7 +340,15 @@ class PackagistinfoCharts extends Module
         ],
     ];
 
-    protected $strTemplate = 'mod_packagistinfocharts';
+    /**
+     * @var mixed|PackagistinfoController
+     */
+    private $packagist;
+
+    /**
+     * @var array|mixed|string|string[]|null
+     */
+    private $packages;
 
     public function generate()
     {
@@ -355,71 +370,38 @@ class PackagistinfoCharts extends Module
         }
 
         $this->packages = array_map((function ($item) { return (int) $item; }), $this->packages);
+        $this->packagist = new PackagistinfoController();
+        $this->config =
+
+        $this->current = $this->packagistcurrent;
 
         return parent::generate();
     }
 
     protected function compile()
     {
-        $packagist = new PackagistinfoController();
+        $packages = $this->packagist->getPackages($this->packages);
+        $timeline = $this->packagist->getTimeline($this->packages, $this->current);
 
-        $color = rand(0, \count(self::chartSettings['colors']) - 1);
-
-        $timeline = $packagist->getTimeline($this->packages);
-        $packages = $packagist->getPackages($this->packages);
-
-        $this->Template->url = $packagist->getPackagistUrl();
+        $this->Template->current = $this->current;
+        $this->Template->url = $this->packagist->getPackagistUrl();
         $this->Template->packages = $packages;
 
         $config = [
-            'type' => self::chartSettings['type'],
-            'options' => self::chartSettings['options'],
+            'options' => $this->chartSettings['options'],
             'data' => [
                 'datasets' => [],
-                'labels' => array_map(
-                    (function ($tstamp) use ($packagist) {
-                        return Date::parse($packagist->getLabelFormat(), $tstamp);
-                    }),
-                    $timeline
-                ),
             ],
         ];
 
-        $n = 0;
-        foreach (['downloads', 'favers'] as $type) {
-            foreach ($packages as $value) {
-                $config['data']['datasets'][$n] = self::chartSettings['default'];
-                $config['data']['datasets'][$n]['backgroundColor'] = self::chartSettings['colors'][$color];
-                $config['data']['datasets'][$n]['pointBorderColor'] = self::chartSettings['colors'][$color];
-                $config['data']['datasets'][$n]['borderColor'] = self::chartSettings['colors'][$color];
-                $config['data']['datasets'][$n]['data'] = [];
-                $config['data']['datasets'][$n]['label'] = $packagist->getPackageName($type.' '.$value['name']);
-
-                foreach ($timeline as $tstamp) {
-                    $marker = Date::parse($packagist->getInterval(), $tstamp);
-                    $config['data']['datasets'][$n]['data'][$marker] = '';
-                }
-
-                $data = $packagist->getPackageItems($value['id']);
-
-                foreach ($data as $count) {
-                    $marker = Date::parse($packagist->getInterval(), $count['check']);
-                    $config['data']['datasets'][$n]['data'][$marker] = $count[$type];
-                }
-
-                $config['data']['datasets'][$n]['data'] = array_values($config['data']['datasets'][$n]['data']);
-
-                $color += 5;
-                if ($color >= \count(self::chartSettings['colors'])) {
-                    $color = 0;
-                }
-                ++$n;
-            }
-            $color += 25;
+        if ($this->current) {
+            $this->getCurrentData($packages, $config);
+        } else {
+            $this->getIntervalData($packages, $timeline, $config);
         }
 
-        $tstampStart = $packagist->getFirstDate($timeline);
-        $tstampEnd = $packagist->getLastDate($timeline);
+        $tstampStart = $this->packagist->getFirstDate($timeline);
+        $tstampEnd = $this->packagist->getLastDate($timeline);
 
         $this->Template->config = [
             'json' => json_encode($config),
@@ -428,21 +410,128 @@ class PackagistinfoCharts extends Module
 
         $this->Template->timeline = [
             'datim' => [
-                'from' => Date::parse($packagist->getDatimFormat(), $tstampStart),
-                'to' => Date::parse($packagist->getDatimFormat(), $tstampEnd),
+                'from' => Date::parse($this->packagist->getDatimFormat(), $tstampStart),
+                'to' => Date::parse($this->packagist->getDatimFormat(), $tstampEnd),
             ],
             'date' => [
-                'from' => Date::parse($packagist->getDateFormat(), $tstampStart),
-                'to' => Date::parse($packagist->getDateFormat(), $tstampEnd),
+                'from' => Date::parse($this->packagist->getDateFormat(), $tstampStart),
+                'to' => Date::parse($this->packagist->getDateFormat(), $tstampEnd),
             ],
             'time' => [
-                'from' => Date::parse($packagist->getTimeFormat(), $tstampStart),
-                'to' => Date::parse($packagist->getTimeFormat(), $tstampEnd),
+                'from' => Date::parse($this->packagist->getTimeFormat(), $tstampStart),
+                'to' => Date::parse($this->packagist->getTimeFormat(), $tstampEnd),
             ],
             'raw' => [
                 'from' => $tstampStart,
                 'to' => $tstampEnd,
             ],
         ];
+    }
+
+    protected function getCurrentData($packages, &$config): void
+    {
+        $colorId = rand(0, \count($this->chartSettings['colors']) - 1);
+        $brightness = .25;
+
+        $config['type'] = 'bar';
+        $config['options']['indexAxis'] = 'y';
+
+        $config['data']['labels'] = [];
+        $config['options']['plugins']['legend']['display'] = false;
+        $config['options']['scales']['x']['stacked'] = true;
+        $config['options']['scales']['y']['stacked'] = true;
+
+        $n = 0;
+        foreach (['downloads', 'favers'] as $type) {
+            $config['data']['datasets'][$n] = $this->chartSettings['default'];
+            $config['data']['datasets'][$n]['data'] = [];
+            $config['data']['datasets'][$n]['label'] = $type;
+
+            $i = 0;
+
+            foreach ($packages as $value) {
+                $color = $this->chartSettings['colors'][$colorId];
+
+                $config['data']['datasets'][$n]['backgroundColor'][$i] = (0 === $n ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][0]['backgroundColor'][$i], $brightness));
+                $config['data']['datasets'][$n]['pointBorderColor'][$i] = (0 === $n ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][0]['pointBorderColor'][$i], $brightness));
+                $config['data']['datasets'][$n]['borderColor'][$i] = (0 === $n ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][0]['borderColor'][$i], $brightness));
+
+                $data = $this->packagist->getPackageItems($value['id'], $this->current);
+
+                $config['data']['datasets'][$n]['data'][] = $data[0][$type];
+                $config['data']['labels'][$value['id']] = $value['title'];
+
+                $colorId += 5;
+                if ($colorId >= \count($this->chartSettings['colors'])) {
+                    $colorId = 0;
+                }
+                ++$i;
+            }
+
+            $colorId += 25;
+            ++$n;
+        }
+
+        $config['data']['labels'] = array_values($config['data']['labels']);
+    }
+
+    protected function getIntervalData($packages, $timeline, &$config): void
+    {
+        $config['type'] = 'line';
+
+        $config['data']['labels'] = array_map(
+            (function ($data) {
+                return Date::parse($this->packagist->getLabelFormat(), $data);
+            }),
+            $timeline
+        );
+
+        $colorId = rand(0, \count($this->chartSettings['colors']) - 1);
+        $brightness = .25;
+
+        $n = 0;
+        $i = 0;
+        foreach (['downloads', 'favers'] as $type) {
+
+            $j = 0;
+
+            foreach ($packages as $value) {
+                $color = $this->chartSettings['colors'][$colorId];
+
+                $config['data']['datasets'][$n] = $this->chartSettings['default'];
+
+                $config['data']['datasets'][$n]['backgroundColor'] = (0 === $i ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][$j]['backgroundColor'], $brightness));
+                $config['data']['datasets'][$n]['pointBorderColor'] = (0 === $i ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][$j]['pointBorderColor'], $brightness));
+                $config['data']['datasets'][$n]['borderColor'] = (0 === $i ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][$j]['borderColor'], $brightness));
+
+                $config['data']['datasets'][$n]['data'] = [];
+                $config['data']['datasets'][$n]['label'] = $this->packagist->getPackageName($value['name']);
+                $config['data']['datasets'][$n]['countType'] = $type;
+
+                foreach ($timeline as $tstamp) {
+                    $marker = Date::parse($this->packagist->getInterval(), $tstamp);
+                    $config['data']['datasets'][$n]['data'][$marker] = '';
+                }
+
+                $data = $this->packagist->getPackageItems($value['id'], $this->current);
+
+                foreach ($data as $count) {
+                    $marker = Date::parse($this->packagist->getInterval(), $count['check']);
+                    $config['data']['datasets'][$n]['data'][$marker] = $count[$type];
+                }
+
+                $config['data']['datasets'][$n]['data'] = array_values($config['data']['datasets'][$n]['data']);
+
+                $colorId += 5;
+                if ($colorId >= \count($this->chartSettings['colors'])) {
+                    $colorId = 0;
+                }
+
+                ++$n;
+                ++$j;
+            }
+            $colorId += 25;
+            ++$i;
+        }
     }
 }
