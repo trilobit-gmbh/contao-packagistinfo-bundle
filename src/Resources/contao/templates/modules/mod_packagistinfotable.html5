@@ -40,20 +40,7 @@
         <?php foreach ($this->tbody as $row => $cols): ?>
             <tr class="row_<?php echo $row; ?>">
                 <?php foreach ($cols as $key => $value): ?>
-                    <<?php echo 0 === $key ? 'th' : 'td'; ?> class="col_<?php echo $key; ?> text-right text-nowrap"
-                    <?php if (1===2 && 0 !== $key):
-                        $percentDownloads = (int) ($value['count']['downloads'] / $this->max['downloads'] * 100);
-                        if (0 < $percentDownloads):
-                    ?>
-                        style="background: linear-gradient(0deg,
-                        rgba(255,255,255,0) 0%,
-                        rgba(255,255,255,0) calc(<?php echo $percentDownloads; ?>% - 2px),
-                        rgba(<?php echo $color; ?>) calc(<?php echo $percentDownloads; ?>% - 1px),
-                        rgba(255,255,255,0) calc(<?php echo $percentDownloads; ?>%),
-                        rgba(255,255,255,0) 100%
-                        );"
-                    <?php endif; endif; ?>
-                    >
+                    <<?php echo 0 === $key ? 'th' : 'td'; ?> class="col_<?php echo $key; ?> text-right text-nowrap<?php if (is_array($value) && 1 === $value['status']['downloads']): ?> text-success<?php elseif (is_array($value) && -1 === $value['status']['downloads']): ?> text-warning<?php endif; ?>">
                         <?php if (0 === $key): ?>
                             <a class="text-dark" href="<?php echo $this->packages[$value]['url']; ?>"><?php echo preg_replace('/Trilobit-Gmbh \/ Contao-(.*?)-Bundle/i', '$1', $this->packages[$value]['title']); ?></a>
                         <?php else: ?>
