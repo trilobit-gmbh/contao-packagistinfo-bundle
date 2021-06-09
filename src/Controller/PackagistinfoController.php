@@ -67,9 +67,6 @@ class PackagistinfoController extends AbstractController
         $this->sendResponse = $sendResponse;
     }
 
-    /**
-     * @return string
-     */
     public function getShortLabelFormat(): string
     {
         return $this->shortLabelFormat;
