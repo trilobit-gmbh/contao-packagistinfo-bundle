@@ -64,14 +64,17 @@ class PackagistinfoTable extends Module
         $tbody = [];
 
         foreach ($timeline as $tstamp) {
-            $marker = Date::parse($this->packagist->getLabelFormat(), $tstamp);
-            $thead[] = $marker;
+            $thead[] = [
+                'label' => Date::parse($this->packagist->getLabelFormat(), $tstamp),
+                'shortLabel' => Date::parse($this->packagist->getShortLabelFormat(), $tstamp),
+                'tstamp' => $tstamp,
+            ];
         }
         $tfoot = $thead;
 
         $n = 0;
         foreach ($packages as $key => $value) {
-            $tbody[$key][] = $value['id'];
+            $tbody[$key][] = $key;
 
             foreach ($timeline as $tstamp) {
                 $tbody[$key][$tstamp] = [
@@ -87,13 +90,13 @@ class PackagistinfoTable extends Module
             }
 
             $max[$key] = [
-                'downloads' => null,
-                'favers' => null,
+                'downloads' => [],
+                'favers' => [],
             ];
 
             $min[$key] = [
-                'downloads' => null,
-                'favers' => null,
+                'downloads' => [],
+                'favers' => [],
             ];
 
             $last = [
@@ -131,20 +134,32 @@ class PackagistinfoTable extends Module
                     'favers' => $count['favers'],
                 ];
 
-                if ($count['downloads'] < $min['downloads'] || null === $min['downloads']) {
-                    $min['downloads'] = $count['downloads'];
+                if ($count['downloads'] < $min['downloads']['count'] || empty($min['downloads'])) {
+                    $min['downloads'] = [
+                        'package' => $key,
+                        'count' => $count['downloads'],
+                    ];
                 }
 
-                if ($count['favers'] < $min['favers'] || null === $min['favers']) {
-                    $min['favers'] = $count['favers'];
+                if ($count['favers'] < $min['favers']['count'] || empty($min['favers'])) {
+                    $min['favers'] = [
+                        'package' => $key,
+                        'count' => $count['favers'],
+                    ];
                 }
 
-                if ($count['downloads'] > $max['downloads']) {
-                    $max['downloads'] = $count['downloads'];
+                if ($count['downloads'] > $max['downloads']['count'] || empty($min['downloads'])) {
+                    $max['downloads'] = [
+                        'package' => $key,
+                        'count' => $count['downloads'],
+                    ];
                 }
 
-                if ($count['favers'] > $max['favers']) {
-                    $max['favers'] = $count['favers'];
+                if ($count['favers'] > $max['favers']['count'] || empty($min['downloads'])) {
+                    $max['favers'] = [
+                        'package' => $key,
+                        'count' => $count['favers'],
+                    ];
                 }
             }
 

@@ -45,6 +45,7 @@ class PackagistinfoController extends AbstractController
     private $timeFormat;
     private $interval;
     private $labelFormat;
+    private $shortLabelFormat;
 
     /**
      * PackagistinfoController constructor.
@@ -61,8 +62,17 @@ class PackagistinfoController extends AbstractController
         $this->timeFormat = Config::get('timeFormat');
         $this->interval = 'Ymd';
         $this->labelFormat = 'D, d. F Y';
+        $this->shortLabelFormat = 'd.m.Y';
 
         $this->sendResponse = $sendResponse;
+    }
+
+    /**
+     * @return string
+     */
+    public function getShortLabelFormat(): string
+    {
+        return $this->shortLabelFormat;
     }
 
     public function getLabelFormat(): string
