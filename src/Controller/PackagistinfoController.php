@@ -193,11 +193,11 @@ class PackagistinfoController extends AbstractController
         return $data;
     }
 
-    public function getPackageItems($id, bool $current = false): array
+    public function getPackageItems($id, bool $current = false, string $types = 'downloads,favers'): array
     {
         if ($current) {
             return Database::getInstance()
-                ->prepare('SELECT downloads,favers,`check` FROM tl_packagistinfo WHERE pid=? ORDER BY `check` DESC')
+                ->prepare('SELECT '.$types.',`check` FROM tl_packagistinfo WHERE pid=? ORDER BY `check` DESC')
                 ->limit(1)
                 ->execute($id)
                 ->fetchAllAssoc()
@@ -205,7 +205,7 @@ class PackagistinfoController extends AbstractController
         }
 
         return Database::getInstance()
-            ->prepare('SELECT downloads,favers,`check` FROM tl_packagistinfo WHERE pid=? ORDER BY `check` ASC')
+            ->prepare('SELECT '.$types.',`check` FROM tl_packagistinfo WHERE pid=? ORDER BY `check` ASC')
             ->execute($id)
             ->fetchAllAssoc()
         ;

@@ -412,6 +412,8 @@ class PackagistinfoCharts extends Module
         $tstampStart = $this->packagist->getFirstDate($timeline);
         $tstampEnd = $this->packagist->getLastDate($timeline);
 
+        $this->Template->types = explode('-', $this->packagistdatatype);
+
         $this->Template->config = [
             'json' => json_encode($config),
             'php' => $config,
@@ -450,7 +452,8 @@ class PackagistinfoCharts extends Module
         $config['options']['scales']['y']['stacked'] = true;
 
         $n = 0;
-        foreach (['downloads', 'favers'] as $type) {
+
+        foreach (explode('-', $this->packagistdatatype) as $type) {
             $config['data']['datasets'][$n] = $this->chartSettings['default'];
             $config['data']['datasets'][$n]['data'] = [];
             $config['data']['datasets'][$n]['label'] = $type;
@@ -464,7 +467,7 @@ class PackagistinfoCharts extends Module
                 $config['data']['datasets'][$n]['pointBorderColor'][$i] = (0 === $n ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][0]['pointBorderColor'][$i], $this->brightness));
                 $config['data']['datasets'][$n]['borderColor'][$i] = (0 === $n ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][0]['borderColor'][$i], $this->brightness));
 
-                $data = $this->packagist->getPackageItems($value['id'], $this->current);
+                $data = $this->packagist->getPackageItems($value['id'], $this->current, $type);
 
                 $config['data']['datasets'][$n]['data'][] = $data[0][$type];
                 $config['data']['labels'][$value['id']] = $this->packagist->getPackageName(preg_replace('/Trilobit-Gmbh \/ Contao-(.*?)-Bundle/i', '$1', $value['title']));
@@ -499,7 +502,8 @@ class PackagistinfoCharts extends Module
 
         $n = 0;
         $i = 0;
-        foreach (['downloads', 'favers'] as $type) {
+
+        foreach (explode('-', $this->packagistdatatype) as $type) {
             $j = 0;
 
             foreach ($packages as $value) {
@@ -520,7 +524,7 @@ class PackagistinfoCharts extends Module
                     $config['data']['datasets'][$n]['data'][$marker] = '';
                 }
 
-                $data = $this->packagist->getPackageItems($value['id'], $this->current);
+                $data = $this->packagist->getPackageItems($value['id'], $this->current, $type);
 
                 foreach ($data as $count) {
                     $marker = Date::parse($this->packagist->getInterval(), $count['check']);

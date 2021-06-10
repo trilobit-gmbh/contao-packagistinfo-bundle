@@ -169,6 +169,8 @@ class PackagistinfoTable extends Module
         $tstampStart = $this->packagist->getFirstDate($timeline);
         $tstampEnd = $this->packagist->getLastDate($timeline);
 
+        $this->Template->types = explode('-', $this->packagistdatatype);
+
         $this->Template->thead = $thead;
         $this->Template->tfoot = $tfoot;
         $this->Template->tbody = $tbody;
