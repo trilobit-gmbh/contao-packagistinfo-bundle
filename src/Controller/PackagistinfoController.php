@@ -248,16 +248,16 @@ class PackagistinfoController extends AbstractController
 
         foreach ($data as $value) {
             $pid = 0;
-            $tstamp = 0;
             $published = 1;
+            $check = 0;
 
             if (false !== array_search($value['name'], array_column($rootElements, 'name'), true)) {
                 $pid = (int) $rootElements[array_search($value['name'], array_column($rootElements, 'name'), true)]['id'];
                 $published = (int) $rootElements[array_search($value['name'], array_column($rootElements, 'name'), true)]['published'];
-                $tstamp = (int) $rootElements[array_search($value['name'], array_column($rootElements, 'name'), true)]['check'];
+                $check = (int) $rootElements[array_search($value['name'], array_column($rootElements, 'name'), true)]['check'];
             }
 
-            if (Date::parse($this->getInterval(), $time) <= Date::parse($this->getInterval(), $tstamp)) {
+            if (Date::parse($this->getInterval(), $time) <= Date::parse($this->getInterval(), $check)) {
                 continue;
             }
 
