@@ -1,6 +1,6 @@
 <?php $this->extend('block_searchable'); ?>
 
-<?php $this->block('content'); $color = '42,166,218,.75'; ?>
+<?php $this->block('content'); $color = '42,166,218,.75'; $pattern = '/^Trilobit-Gmbh \/ (Contao|trilobit)-(.*?)(-Bundle|)$/i'; ?>
 
 <div class="container-fluid">
     <h2>Auswertungszeitraum</h2>
@@ -52,7 +52,7 @@
                 <?php $n=0; foreach ($cols as $key => $value): ?>
                     <<?php echo 0 === $n ? 'th' : 'td'; ?> class="col_<?php echo $n; ?> text-right text-nowrap"<?php echo (0 === $n ? ' scope="row"':''); ?>>
                         <?php if (0 === $n): ?>
-                            <a class="text-dark" href="<?php echo $this->packages[$value]['url']; ?>"><?php echo preg_replace('/Trilobit-Gmbh \/ Contao-(.*?)-Bundle/i', '$1', $this->packages[$value]['title']); ?></a>
+                            <a class="text-dark" href="<?php echo $this->packages[$value]['url']; ?>"><?php echo preg_replace($pattern, '$2', $this->packages[$value]['title']); ?></a>
                         <?php else: ?>
                             <?php if (is_array($value)): ?>
                                 <?php foreach ($this->types as $type): ?>
@@ -102,14 +102,14 @@
                 <div class="col-md-6">
                     <h5>Downloads</h5>
                     <p>
-                        <?php echo preg_replace('/Trilobit-Gmbh \/ Contao-(.*?)-Bundle/i', '$1', $this->packages[$this->min['downloads']['package']]['title']); ?>:
+                        <?php echo preg_replace($pattern, '$2', $this->packages[$this->min['downloads']['package']]['title']); ?>:
                         <?php echo $this->min['downloads']['count']; ?>
                     </p>
                 </div>
                 <div class="col-md-6">
                     <h5>Favers</h5>
                     <p>
-                        <?php echo preg_replace('/Trilobit-Gmbh \/ Contao-(.*?)-Bundle/i', '$1', $this->packages[$this->min['favers']['package']]['title']); ?>:
+                        <?php echo preg_replace($pattern, '$2', $this->packages[$this->min['favers']['package']]['title']); ?>:
                         <?php echo $this->min['favers']['count']; ?>
                     </p>
                 </div>
@@ -121,21 +121,19 @@
                 <div class="col-md-6">
                     <h5>Downloads</h5>
                     <p>
-                        <?php echo preg_replace('/Trilobit-Gmbh \/ Contao-(.*?)-Bundle/i', '$1', $this->packages[$this->max['downloads']['package']]['title']); ?>:
+                        <?php echo preg_replace($pattern, '$2', $this->packages[$this->max['downloads']['package']]['title']); ?>:
                         <?php echo $this->max['downloads']['count']; ?>
                     </p>
                 </div>
                 <div class="col-md-6">
                     <h5>Favers</h5>
                     <p>
-                        <?php echo preg_replace('/Trilobit-Gmbh \/ Contao-(.*?)-Bundle/i', '$1', $this->packages[$this->max['favers']['package']]['title']); ?>:
+                        <?php echo preg_replace($pattern, '$2', $this->packages[$this->max['favers']['package']]['title']); ?>:
                         <?php echo $this->max['favers']['count']; ?>
                     </p>
                 </div>
             </div>
         </div>
     </div>
-
-    <pre><?php var_dump($this->packages); ?></pre>
 </div>
 <?php $this->endblock(); ?>

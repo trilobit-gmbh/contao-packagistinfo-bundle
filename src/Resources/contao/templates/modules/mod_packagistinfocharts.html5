@@ -1,6 +1,6 @@
 <?php $this->extend('block_searchable'); ?>
 
-<?php $this->block('content'); ?>
+<?php $this->block('content'); $pattern = '/^Trilobit-Gmbh \/ (Contao|trilobit)-(.*?)(-Bundle|)$/i'; ?>
 
 <h2>Auswertungszeitraum</h2>
 <h3><?php echo $this->timeline['date']['from']; ?>
@@ -11,7 +11,7 @@
 
 <p><?php echo implode(', ', $this->types)?></p>
 
-<script src="/bundles/trilobitpackagistinfo/chart.js"></script>
+<script src="/assets/trilobit-chart/dist/chart.min.js"></script>
 
 <canvas id="packagistInfoChart_<?php echo $this->id; ?>"></canvas>
 
@@ -20,10 +20,10 @@
         <div class="legend">
             <h3><?php echo $type; ?></h3>
             <div class="d-flex flex-wrap">
-                <?php foreach ($this->config['php']['data']['datasets'] as $value): if (1==2 && $type !== $value['countType']) { continue; } ?>
+                <?php foreach ($this->config['php']['data']['datasets'] as $value): ?>
                     <div class="p-2">
                         <span style="background-color: <?php echo $value['backgroundColor']; ?>; borderColor: <?php echo $value['borderColor']; ?>" class="px-3 mr-2"></span>
-                        <?php echo preg_replace('/Trilobit-Gmbh \/ Contao-(.*?)-Bundle/i', '$1', $value['label']); ?>
+                        <?php echo preg_replace($pattern, '$2', $value['label']); ?>
                     </div>
                 <?php endforeach; ?>
             </div>
