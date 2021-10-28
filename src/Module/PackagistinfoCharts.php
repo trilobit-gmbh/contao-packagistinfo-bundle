@@ -441,7 +441,7 @@ class PackagistinfoCharts extends Module
 
     protected function getCurrentData($packages, &$config): void
     {
-        $colorId = rand(0, \count($this->chartSettings['colors']) - 1);
+        $colorId = random_int(0, \count($this->chartSettings['colors']) - 1);
 
         $config['type'] = 'bar';
         $config['options']['indexAxis'] = 'y';
@@ -470,7 +470,7 @@ class PackagistinfoCharts extends Module
                 $data = $this->packagist->getPackageItems($value['id'], $this->current, $type);
 
                 $config['data']['datasets'][$n]['data'][] = $data[0][$type];
-                $config['data']['labels'][$value['id']] = $this->packagist->getPackageName(preg_replace('/Trilobit-Gmbh \/ Contao-(.*?)-Bundle/i', '$1', $value['title']));
+                $config['data']['labels'][$value['id']] = $this->packagist->getPackageName(preg_replace('/^Trilobit-Gmbh \/ (Contao|trilobit)-(.*?)(-Bundle|)$/i', '$2', $value['title']));
 
                 $colorId += 5;
                 if ($colorId >= \count($this->chartSettings['colors'])) {
@@ -497,7 +497,7 @@ class PackagistinfoCharts extends Module
             $timeline
         );
 
-        $colorId = rand(0, \count($this->chartSettings['colors']) - 1);
+        $colorId = random_int(0, \count($this->chartSettings['colors']) - 1);
         $brightness = .25;
 
         $n = 0;
@@ -516,7 +516,7 @@ class PackagistinfoCharts extends Module
                 $config['data']['datasets'][$n]['borderColor'] = (0 === $i ? $color : $this->packagist->adjustBrightness($config['data']['datasets'][$j]['borderColor'], $this->brightness));
 
                 $config['data']['datasets'][$n]['data'] = [];
-                $config['data']['datasets'][$n]['label'] = $this->packagist->getPackageName(preg_replace('/Trilobit-Gmbh \/ Contao-(.*?)-Bundle/i', '$1', $value['title']));
+                $config['data']['datasets'][$n]['label'] = $this->packagist->getPackageName(preg_replace('/^Trilobit-Gmbh \/ (Contao|trilobit)-(.*?)(-Bundle|)$/i', '$2', $value['title']));
                 $config['data']['datasets'][$n]['countType'] = $type;
 
                 foreach ($timeline as $tstamp) {
