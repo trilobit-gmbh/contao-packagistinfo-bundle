@@ -13,7 +13,8 @@
         "php": "^7.3",
         "ext-curl": "*",
         "ext-json": "*",
-        "contao/core-bundle": "~4.4"
+        "contao/core-bundle": "~4.4",
+        "trilobit-gmbh/trilobit-chart": "^1.0"
     },
     "require-dev": {
         "contao/manager-plugin": "^2.0",
